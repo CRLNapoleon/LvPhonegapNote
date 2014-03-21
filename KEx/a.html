@@ -1,0 +1,271 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Example 01 - jQuery Mobile</title>
+	<link rel="stylesheet" href="jquery.mobile-1.4.2.min.css" />
+    <script type="text/javascript" src="phonegap.js"></script>
+    <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="jquery.mobile-1.4.2.min.js"></script>
+    <script type="text/javascript" src="ut.js"></script>
+    <script type="text/javascript">
+		var __createNew = false;
+		var __selectedNoteId = null;
+		var __CurrentNote = new UTNote({ configs : new UTNoteConfig(), content : new UTNoteContent() });
+		
+		$(document).ready(function(e) {
+			document.addEventListener("deviceready", onDeviceReady, false);
+			//
+			alert(getDateString(new Date()));
+        });
+		$(document).on("pagecreate", "#home-page", function(event){
+			$("#btn-newnote").click(function(e) {
+				createNewNote();
+				//
+                $.mobile.changePage("#note-page");
+            });
+		});
+			
+		function onDeviceReady(){
+			loadAllNotesFile();
+			initformenulist();
+		}
+		function loadAllNotesFile(){
+			window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, getallnote_gotFS, getallnote_fail);
+		}
+		function getallnote_gotFS(fileSystem) {
+			var reader = fileSystem.root.createReader();
+			reader.readEntries(getallnote_gotList, getallnote_fail);
+    	}
+		function getallnote_gotList(entries){
+			$("#listnotes").empty();
+			for(var i = 0; i < entries.length; i++){
+				if (entries[i].name.indexOf(".mnf") != -1){
+					entries[i].file(getallnote_gotFile, getallnote_fail);
+				}
+			}
+		}
+		function getallnote_gotFile(file){
+			getallnote_readNote(file);
+		}
+		function getallnote_readNote(file){
+			var reader = new FileReader();
+			reader.onloadend = function(evt){
+				var res = evt.target.result;
+				// get id
+				var note_id = $(res).find("save").first().attr('id');
+				// get config
+				var note_config = $(res).find("save config").first();
+				// get content
+				var note_content = $(res).find("save content").first();
+				//
+				var note_title = $(note_config).find("title").first().text();
+				var note_createtime = $(note_config).find("createtime").first().text();
+				var note_updatetime = $(note_config).find("updatetime").first().text();
+				//
+				var note_description = note_title;//temp
+				//
+				$("#listnotes").append('<li data-filtertext="'+note_title+'" id="'+note_id+'"><a href="#note-page"><h2>'+note_title+'</h2><p>'+note_description+'</p><p class="ui-li-aside"><strong>'+note_updatetime+'</strong></p></a></li>').listview('refresh');
+				//
+			};
+			reader.readAsText(file);
+		}
+		function getallnote_fail(error){
+		}
+		
+		function initformenulist(){
+			$("> li a", $("#listnotes")).click(function(){
+				__selectedNoteId = $(this).parent().attr("id");
+			});
+		}
+		
+		// home-page : before show
+		$(document).on("pagebeforeshow", "#home-page", function(){
+		});
+		// home-page : shown
+		$(document).on("pageshow", "#home-page", function(){
+			
+		});
+		// note-page : before show
+		$(document).on("pagebeforeshow", "#note-page", function(){
+			setNoteInfo();
+			initnotetitle();
+		});
+		// note-page : shown
+		$(document).on("pageshow", "#note-page", function(){
+			
+		});
+		$(document).on("pagebeforehide", "#note-page", function(){
+			notehide();
+		});
+		// change title
+		function initnotetitle(){
+			$("#txt-notetitle").parent().css("display", "none");
+			$("#note-title").on("click", function(){
+				$(this).css("display", "none");
+				$("#txt-notetitle").parent().css("display", "block");
+				$("#txt-notetitle").val($(this).text());
+			});
+			$("#txt-notetitle").on("blur", function(){
+				updateNoteTitle();
+			});
+			$("#txt-notetitle").on("keypress", function(event){
+				var keycode = (event.keyCode ? event.keyCode : event.which);
+				if(keycode == '13') {
+					updateNoteTitle();
+				}
+			});
+
+		}
+		function updateNoteTitle(){
+			$("#note-title").css("display", "block");
+			$("#note-title").text($("#txt-notetitle").val());
+			$("#txt-notetitle").parent().css("display", "none");
+			//
+			
+		}
+		function notehide(){
+			
+		}
+		//
+		//
+		//
+		function setNoteInfo(){
+			//
+			$("#note-title").text(__CurrentNote.configs.title);
+			//
+			if (__createNew){
+				
+			}else{
+			}
+		}
+		//
+		function createNewNote(){
+			var note_id = "note" + getDateString(new Date());
+			$("#note-title").text('untitled');
+			clearNoteContent();
+			__CurrentNote.id = note_id;
+			__selectedNoteId = note_id;
+			__createNew = true;
+		}
+		//
+		function clearNoteContent(){
+			__CurrentNote.clearNote();
+		}
+		//
+		function getDateString(date){
+			return 	formatDate(date.getDate(), 2) + "_" +
+					formatDate(date.getUTCMonth() + 1, 2) + "_" +
+					formatDate(date.getFullYear(), 4) + "-" +
+					formatDate(date.getUTCHours(), 2) + "_" +
+					formatDate(date.getUTCMinutes(), 2) + "_" +
+					formatDate(date.getUTCSeconds(), 2);
+		}
+		function formatDate(e, cn){
+			var s = e.toString();
+			while (s.length < cn){
+				s = "0" + s;
+			}
+			return s;
+		}
+	</script>
+</head>
+<body>
+	<!-- Page (Home) -->
+    <div data-role="page" id="home-page">
+    	<!-- Header -->
+        <div data-role="header" data-theme="b" data-position="fixed">
+        	<h1>Note</h1>
+            
+            <a href="#" id="btn-newnote" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-plus">New Note</a>
+        </div><!-- /header-->
+        
+        <!-- content -->
+        <div data-role="content">
+            <!-- listview -->
+            <ul data-role="listview" id="listnotes" data-filter="true" data-filter-placeholder="Search Notes..." data-split-theme="a" data-theme="a">
+            	<!--
+                <li><a href="#note-page" class="ui-li-has-icon ui-btn ui-icon-plus ui-btn-icon-left">New Note</a></li>
+                -->
+                <!-- Example -->
+                <li data-filtertext="Một" id="note10_11_1111">
+                	<a href="#note-page">
+                        <h2>Một</h2>
+                        <p>Một với một là hai</p>
+                        <p class="ui-li-aside"><strong>19/03/2014 9:00 AM</strong></p>
+                    </a>
+				</li>
+                <li data-filtertext="Hai" id="note12_11_1111">
+                	<a href="#note-page">
+                        <h2>Hai</h2>
+                        <p>Hai với hai là bốn</p>
+                        <p class="ui-li-aside"><strong>21/04/2014 10:00 AM</strong></p>
+                    </a>
+				</li>
+                <!-- /example-->
+                
+            </ul><!--/listview -->
+        </div><!-- /content -->
+        
+        <!-- footer -->
+        <div data-role="footer" data-theme="b" data-position="fixed">
+        	<h4>@ CRLN - 19/03/2014</h4>
+        </div><!-- /footer -->
+    </div><!-- /page -->
+    
+	<!-- Page (Main) -->
+	<div data-role="page" id="note-page">
+    	<!-- Header -->
+    	<div data-role="header" data-theme="b" data-position="fixed">
+        	<h1 id="note-title">Untitled</h1>
+            <style>
+				.inputtitle-wrapper{
+					text-align: center;
+					padding: .2em 0;
+					text-overflow: ellipsis;
+					overflow: hidden;
+					white-space: nowrap;
+					background-color: #FFF;
+					margin: 0 auto;
+					margin-top: 4px;
+					margin-bottom: 4px;
+					width: 30%;
+					border-radius: .3125em;
+					border-color: #ddd;
+					box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
+				}
+				.inputtitle-text{
+					text-align: center;
+					width: 100%;
+					border: 0;
+					outline: none;
+				}
+			</style>
+            <div class="inputtitle-wrapper">
+	            <input id="txt-notetitle" type="text" data-role="none" class="inputtitle-text"/>
+            </div>
+            <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-left">
+                <a href="#nav-panel-left" class="ui-btn ui-btn-icon-left ui-icon-grid">Menu</a>
+                <a href="#home-page" class="ui-btn ui-btn-icon-left ui-icon-home">Home</a>
+            </div>
+            <a href="#setting-page" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-gear">Options</a>
+        </div><!-- /header -->        
+        
+        <!-- Footer -->
+        <div data-role="footer">
+        </div> <!-- /footer -->
+        
+        <!-- Panel nav-panel-left -->
+        <div data-role="panel" id="nav-panel-left" data-position="left" class="ui-panel ui-panel-position-left" data-display="overlay">
+        </div><!-- /panel -->
+        
+    </div><!-- /page (main) -->
+    
+    <!-- Page (setting) -->
+    <div data-role="page" id="setting-page">
+    	<div data-role="header" data-theme="b" data-position="fixed">
+        	<h1>Settings</h1>
+            <a href="#note-page" class="ui-btn-left ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back">Back</a>
+        </div>
+    </div> <!-- /page -->
+</body>
+</html>

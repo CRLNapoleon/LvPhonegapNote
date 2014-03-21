@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<save id="[id của save]">
+	<!-- Cấu hình của file note -->
+	<config>
+		<!-- background -->
+		<background></background>
+		<!-- thời gian tạo -->
+		<createtime>dd/mm/yyyy hh:mm:ss</createtime>
+		<!-- thời gian update lần cuối -->
+		<updatetime>dd/mm/yyyy hh:mm:ss</updatetime>
+		<!-- tiêu đề note -->
+		<title></title>
+		<!-- contact list -->
+		<contacts>
+			<!-- 1 contact -->
+			<contact id="">
+				<!-- tên hiển thị -->
+				<displayName></displayName>
+				<!-- số điện thoại -->
+				<phone></phone>
+			</contact>
+		</contacts>
+		
+	</config>
+	
+	<!-- Nội dung của note -->
+	<content>
+		<!-- Các thẻ support -->
+		<div></div>
+		
+		<!-- thẻ ảnh -->
+		<img />
+		
+		<!-- list -->
+		<ul>
+			<!-- từng dòng -->
+			<li></li>
+		</ul>
+		
+	</content>
+</save>
