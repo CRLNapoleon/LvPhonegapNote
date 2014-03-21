@@ -26,16 +26,18 @@
 	<!-- Nội dung của note -->
 	<content>
 		<!-- Các thẻ support -->
-		<div></div>
+		<text>
+			<!-- list -->
+			<ul>
+				<!-- từng dòng -->
+				<li></li>
+			</ul>
+		</text>
 		
 		<!-- thẻ ảnh -->
 		<img />
 		
-		<!-- list -->
-		<ul>
-			<!-- từng dòng -->
-			<li></li>
-		</ul>
+		
 		
 	</content>
 </save>
