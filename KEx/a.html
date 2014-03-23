@@ -50,7 +50,7 @@
 		function getallnote_readNote(file){
 			var reader = new FileReader();
 			reader.onloadend = function(evt){
-				var res = evt.target.result;
+				var res = $.parseXML(evt.target.result);
 				// get id
 				var note_id = $(res).find("save").first().attr('id');
 				// get config

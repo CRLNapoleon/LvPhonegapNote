@@ -6,6 +6,21 @@ function UTNote(note){
 	this.configs = note.configs;
 	this.content = note.content;
 }
+
+UTNote.prototype.loadFromData = function(data){
+	if ("string" == typeof data){
+		data = $.parseXML(data);
+	}
+	this.id = $(data).find("save").first().attr('id');
+	this.configs = new UTNoteConfig();
+	//
+	this.configs.loadFromData($(data).find("save config").first());
+	//
+	this.content = new UTNoteContent();
+	//
+	this.content.loadFromData($(data).find("save content").first());
+};
+
 function UTNoteConfig(configs){
 	configs = configs || {};
 	this.background = configs.background;
@@ -146,7 +161,7 @@ function notegetfile(file){
 	//
 	var reader = new FileReader();
 	reader.onloadend = function(evt){
-		var file_content = evt.target.result;
+		var file_content = $.parseXML(evt.target.result);
 		//
 		__CurrentNote.id = $(file_content).find("save").first().attr('id');
 		__CurrentNote.configs.loadFromData($(file_content).find("save config").first());
