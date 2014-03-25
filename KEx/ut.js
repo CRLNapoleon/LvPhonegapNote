@@ -28,13 +28,14 @@ UTNote.prototype.clearNote = function(){
 };
 UTNote.prototype.toXMLString = function(){
 	var s = $(this.toXML())[0].outerHTML;
+	/*
 	var t = -1;
 	while ((t = s.indexOf("<img", t)) != -1){
 		var t2 = s.indexOf(">", t);
 		var st = s.substring(t, t2 + 1);
 		s = s.replace(st, st.substring(0, st.length - 1) + "/>");
 		t = t2;
-	}
+	}*/
 	return '<?xml version="1.0" encoding="UTF-8"?>' + s;
 };
 UTNote.prototype.toXML = function(){
@@ -159,8 +160,8 @@ function UTNoteContent(content){
 UTNoteContent.prototype.loadFromData = function(data){
 	var content_imgs = new UTContentImgList();
 	// img tag
-	$(data).find("img").each(function(index, element) {
-        content_imgs.addImg($(element).attr('src'));
+	$(data).find("imgs > photo").each(function(index, element) {
+		content_imgs.addImg(new UTContentImage({ alt: $(element).attr('alt'), data: $(element).text() }));
     });
 	// text
 	var txt = $(data).find("text").first();
@@ -170,10 +171,8 @@ UTNoteContent.prototype.loadFromData = function(data){
 UTNoteContent.prototype.toXML = function(){
 	var rootContent = $("<content></content>");
 	rootContent
-		.append(this.text);
-	$(this.imgs.list).each(function(index, element) {
-        rootContent.append("<img src='"+element+"' />");
-    });
+		.append(this.text)
+		.append(this.imgs.toXML());
 	return rootContent;
 };
 
@@ -193,7 +192,24 @@ UTContentImgList.prototype.removeImg = function(img){
 	}
 	return false;
 };
-
+UTContentImgList.prototype.toXML = function(){
+	var rootImgList = $("<imgs></imgs>");
+	$(this.list).each(function(index, element) {
+        rootImgList.append(element.toXML());
+    });
+	return rootImgList;
+};
+// UTContentImage
+function UTContentImage(imgData){
+	imgData = imgData || {};
+	this.alt = imgData.alt;
+	this.data = imgData.data;
+}
+UTContentImage.prototype.toXML = function(){
+	var rootImage = $("<photo>"+this.data.toString()+"</photo>");
+	rootImage.attr('alt', this.alt);
+	return rootImage;
+};
 //
 // Load Data
 //

@@ -35,8 +35,9 @@
 		</text>
 		
 		<!-- thẻ ảnh -->
-		<img />
-		
+		<imgs>
+			<image alt="">[data]</image>
+		</imgs>
 		
 		
 	</content>
