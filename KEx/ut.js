@@ -21,6 +21,31 @@ UTNote.prototype.loadFromData = function(data){
 	this.content.loadFromData($(data).find("save content").first());
 };
 
+UTNote.prototype.clearNote = function(){
+	this.id = null;
+	this.configs = new UTNoteConfig();
+	this.content = new UTNoteContent();
+};
+UTNote.prototype.toXMLString = function(){
+	var s = $(this.toXML())[0].outerHTML;
+	var t = -1;
+	while ((t = s.indexOf("<img", t)) != -1){
+		var t2 = s.indexOf(">", t);
+		var st = s.substring(t, t2 + 1);
+		s = s.replace(st, st.substring(0, st.length - 1) + "/>");
+		t = t2;
+	}
+	return '<?xml version="1.0" encoding="UTF-8"?>' + s;
+};
+UTNote.prototype.toXML = function(){
+	var root = $("<save></save>");
+	root.attr('id', this.id);
+	root
+		.append(this.configs.toXML())
+		.append(this.content.toXML());
+	return root;
+};
+
 function UTNoteConfig(configs){
 	configs = configs || {};
 	this.background = configs.background;
@@ -49,10 +74,27 @@ UTNoteConfig.prototype.loadFromData = function(data){
 	this.title = note_title;
 	this.contacts = note_contacts;
 };
+UTNoteConfig.prototype.toXML = function(){
+	var rootConfig = $("<config></config>");
+	rootConfig
+		.append("<background>"+this.background+"</background>")
+		.append("<createtime>"+this.createtime+"</createtime>")
+		.append("<updatetime>"+this.updatetime+"</updatetime>")
+		.append("<title>"+this.title+"</title>")
+		.append(this.contacts.toXML());
+	return rootConfig;
+};
 // UTContactList
 function UTContactList(){
 	this.list = new Array();
 }
+UTContactList.prototype.toXML = function(){
+	var rootContacts = $("<contacts></contacts>");
+	$(this.list).each(function(index, element) {
+        rootContacts.append(element.toXML());
+    });
+	return rootContacts;
+};
 UTContactList.prototype.addContact = function(contact){
 	this.list.push(contact);
 };
@@ -99,6 +141,15 @@ function UTContact(contact){
 	this.displayName = contact.displayName;
 	this.phone = contact.phone;
 }
+UTContact.prototype.toXML = function(){
+	var rootContact = $("<contact></contact>");
+	rootContact.attr('id', this.id);
+	rootContact
+		.append("<displayName>"+this.displayName+"</displayName>")
+		.append("<phone>"+this.phone+"</phone>");
+	return rootContact;
+};
+// UTNoteContent
 function UTNoteContent(content){
 	content = content || {};
 	this.imgs = content.imgs;
@@ -112,15 +163,18 @@ UTNoteContent.prototype.loadFromData = function(data){
         content_imgs.addImg($(element).attr('src'));
     });
 	// text
-	var txt = $(data).find("text").first().text();
+	var txt = $(data).find("text").first();
 	this.imgs = content_imgs;
 	this.text = txt;
 };
-
-UTNote.prototype.clearNote = function(){
-	this.id = null;
-	this.configs = new UTNoteConfig();
-	this.content = new UTNoteContent();
+UTNoteContent.prototype.toXML = function(){
+	var rootContent = $("<content></content>");
+	rootContent
+		.append(this.text);
+	$(this.imgs.list).each(function(index, element) {
+        rootContent.append("<img src='"+element+"' />");
+    });
+	return rootContent;
 };
 
 // UTContent >
