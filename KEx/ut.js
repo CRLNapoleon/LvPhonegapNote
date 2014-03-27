@@ -222,7 +222,7 @@ function loadNote(noteId, loadDone){
 	window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, getnote_gotFS, getnote_fail);
 }
 function getnote_gotFS(fileSystem){
-	fileSystem.root.getFile("note" + __noteLoading + ".mnf", null, notegotFileEntry, getnote_fail);
+	fileSystem.root.getFile(getNoteFileNameById(__noteLoading), null, notegotFileEntry, getnote_fail);
 }
 function notegotFileEntry(fileEntry){
 	fileEntry.file(notegetfile, getnote_fail);
@@ -233,9 +233,7 @@ function notegetfile(file){
 	reader.onloadend = function(evt){
 		var file_content = $.parseXML(evt.target.result);
 		//
-		__CurrentNote.id = $(file_content).find("save").first().attr('id');
-		__CurrentNote.configs.loadFromData($(file_content).find("save config").first());
-		__CurrentNote.content.loadFromData($(file_content).find("save content").first());
+		__CurrentNote.loadFromData(file_content);
 		// callback
 		__noteLoadDone();
 	};
@@ -243,4 +241,34 @@ function notegetfile(file){
 	//
 }
 function getnote_fail(error){
+}
+//
+// Write Note
+//
+var __CurrentNoteWrote;
+var __noteWriteDone;
+
+function getNoteFileNameById(id){
+	return "note" + id + ".mnf";
+}
+function writeNote(note, writeDone){
+	__CurrentNoteWrote = note;
+	__noteWriteDone = writeDone;
+	window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, noteWriter_gotFS, noteWriter_fail);
+}
+
+function noteWriter_gotFS(fileSystem){
+	fileSystem.root.getFile(getNoteFileNameById(__CurrentNoteWrote.id), {create: true, exclusive: false}, noteWriter_gotFileEntry, noteWriter_fail);
+}
+function noteWriter_gotFileEntry(fileEntry){
+	fileEntry.createWriter(noteWriter_gotFileWriter, noteWriter_fail);
+}
+function noteWriter_gotFileWriter(writer){
+	writer.onwriteend = function(evt){
+		// callback
+		__noteWriteDone();
+	}
+	writer.write(__CurrentNoteWrote.toXMLString());
+}
+function noteWriter_fail(error){
 }
