@@ -14,8 +14,6 @@
 		
 		$(document).ready(function(e) {
 			document.addEventListener("deviceready", onDeviceReady, false);
-			//
-			alert(getDateString(new Date()));
         });
 		$(document).on("pagecreate", "#home-page", function(event){
 			$("#btn-newnote").click(function(e) {
@@ -94,8 +92,18 @@
 		$(document).on("pageshow", "#note-page", function(){
 			
 		});
-		$(document).on("pagebeforehide", "#note-page", function(){
+		$(document).on("pagebeforehide", "#note-page", function(e, ui){
 			notehide();
+			//
+			$.mobile.loading( 'show', {
+				text: 'Saving...',
+				textVisible: true,
+				theme: 'a',
+				html: ""
+			});
+			//
+			//
+			savenote();
 		});
 		// change title
 		function initnotetitle(){
@@ -125,6 +133,14 @@
 		}
 		function notehide(){
 			
+		}
+		function savenote(){
+			writeNote(__CurrentNote, savenoteDone);
+		}
+		function savenoteDone(){
+			//
+			loadAllNotesFile();
+			initformenulist();
 		}
 		//
 		//
