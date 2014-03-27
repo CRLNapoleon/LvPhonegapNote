@@ -125,17 +125,27 @@
 
 		}
 		function updateNoteTitle(){
+			var newTitle = $("#txt-notetitle").val();
 			$("#note-title").css("display", "block");
-			$("#note-title").text($("#txt-notetitle").val());
+			$("#note-title").text(newTitle);
 			$("#txt-notetitle").parent().css("display", "none");
 			//
-			
+			__CurrentNote.configs.title = newTitle;
 		}
 		function notehide(){
 			
 		}
 		function savenote(){
+			// get note info
+			getContentInNote();
+			//
 			writeNote(__CurrentNote, savenoteDone);
+		}
+		function getContentInNote(){
+			var contentTxt = $("</div>").text($("textarea").val()).html();
+			//
+			//
+			__CurrentNote.content.text = $.parseXML("<p>"+contentTxt+"</p>");
 		}
 		function savenoteDone(){
 			//
@@ -148,6 +158,8 @@
 		function setNoteInfo(){
 			//
 			$("#note-title").text(__CurrentNote.configs.title);
+			var content = $("div[data-role='content']", "#note-page");
+			$(content).css("background-color", "#"+__CurrentNote.configs.background);
 			//
 			if (__createNew){
 				
@@ -157,9 +169,16 @@
 		//
 		function createNewNote(){
 			var note_id = "note" + getDateString(new Date());
-			$("#note-title").text('untitled');
 			clearNoteContent();
+			//
 			__CurrentNote.id = note_id;
+			__CurrentNote.configs.title = 'untitled';
+			__CurrentNote.configs.background = "FFC";
+			__CurrentNote.configs.contacts = new UTContactList();
+			__CurrentNote.configs.createtime = (new Date()).toString();
+			__CurrentNote.configs.updatetime = __CurrentNote.configs.createtime;
+			__CurrentNote.content.imgs = new UTContentImgList();
+			__CurrentNote.content.text = $.parseXML("");
 			__selectedNoteId = note_id;
 			__createNew = true;
 		}
@@ -199,25 +218,6 @@
         <div data-role="content">
             <!-- listview -->
             <ul data-role="listview" id="listnotes" data-filter="true" data-filter-placeholder="Search Notes..." data-split-theme="a" data-theme="a">
-            	<!--
-                <li><a href="#note-page" class="ui-li-has-icon ui-btn ui-icon-plus ui-btn-icon-left">New Note</a></li>
-                -->
-                <!-- Example -->
-                <li data-filtertext="Một" id="note10_11_1111">
-                	<a href="#note-page">
-                        <h2>Một</h2>
-                        <p>Một với một là hai</p>
-                        <p class="ui-li-aside"><strong>19/03/2014 9:00 AM</strong></p>
-                    </a>
-				</li>
-                <li data-filtertext="Hai" id="note12_11_1111">
-                	<a href="#note-page">
-                        <h2>Hai</h2>
-                        <p>Hai với hai là bốn</p>
-                        <p class="ui-li-aside"><strong>21/04/2014 10:00 AM</strong></p>
-                    </a>
-				</li>
-                <!-- /example-->
                 
             </ul><!--/listview -->
         </div><!-- /content -->
@@ -260,11 +260,21 @@
 	            <input id="txt-notetitle" type="text" data-role="none" class="inputtitle-text"/>
             </div>
             <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-left">
-                <a href="#nav-panel-left" class="ui-btn ui-btn-icon-left ui-icon-grid">Menu</a>
-                <a href="#home-page" class="ui-btn ui-btn-icon-left ui-icon-home">Home</a>
+                <a href="#nav-panel-left" class="ui-btn ui-icon-grid ui-mini ui-corner-all ui-btn-icon-notext">Menu</a>
+                <a href="#home-page" class="ui-btn ui-icon-home ui-mini ui-corner-all ui-btn-icon-notext">Home</a>
             </div>
-            <a href="#setting-page" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-gear">Options</a>
+            <a href="#setting-page" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-icon-gear ui-btn-icon-notext">Options</a>
         </div><!-- /header -->        
+        
+        <div data-role="content">
+        	<textarea placeholder="Note here..."></textarea>
+        	<div data-role="collapsible" data-collapsed="true" id="contentPhotos">
+            	<h3>Photos</h3>
+            </div>
+            <div data-role="collapsible" data-collapsed="true" id="contentContacts">
+            	<h3>Contacts</h3>
+            </div>
+        </div>
         
         <!-- Footer -->
         <div data-role="footer">
