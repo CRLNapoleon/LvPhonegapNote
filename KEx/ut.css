@@ -35,6 +35,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a9db80', end
 	cursor: pointer;
 }
 .photoElement > .photoContent > .photoRight{
+	display: block;
 	background-color: #FFF;
 	height: 100%;
 	width: 70px;
