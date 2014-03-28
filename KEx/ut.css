@@ -51,3 +51,15 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a9db80', end
 	cursor: pointer;
 	box-shadow: 2px 0 2px 2px #CCC;
 }
+
+/*
+
+*/
+.ui-icon-takephoto:after {
+	background-image: url(micons/camera-icon.png);
+	background-size: 24px 24px;
+}
+.ui-icon-albumphoto:after{
+	background-image: url(micons/Images-icon.png);
+	background-size: 24px 24px;
+}

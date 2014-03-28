@@ -272,7 +272,14 @@
 		//
 		//
 		//
-		function addPhoto(){
+		function addTakePhoto(){
+			navigator.camera.getPicture(addPhoto_onSuccess, addPhoto_onFail, { quality: 50,
+				encodingType: Camera.EncodingType.JPEG,
+				sourceType: Camera.PictureSourceType.CAMERA,
+				destinationType: Camera.DestinationType.DATA_URL
+			});
+		}
+		function addAlbumPhoto(){
 			navigator.camera.getPicture(addPhoto_onSuccess, addPhoto_onFail, { quality: 50,
 				encodingType: Camera.EncodingType.JPEG,
 				sourceType: Camera.PictureSourceType.PHOTOLIBRARY,
@@ -386,7 +393,8 @@
 				<textarea placeholder="Note here..."></textarea>
 				<div data-role="collapsible" data-collapsed="true" id="contentPhotos">
 					<h3>Photos</h3>
-                    <button data-role="button" onClick="addPhoto();">Add Photo</button>
+                    <button data-role="button" onClick="addTakePhoto();" data-inline="true" data-icon="takephoto">Take Photo</button>
+                    <button data-role="button" onClick="addAlbumPhoto();" data-inline="true" data-icon="albumphoto">From Album</button>
                     <div id="contentPhotosList">
                     	<!--
                     	<div class="photoElement">
