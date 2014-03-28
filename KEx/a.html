@@ -1,8 +1,31 @@
 ﻿<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
 <html>
-<head>
-	<title>Example 01 - jQuery Mobile</title>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <title>Example 01 - jQuery Mobile</title>
 	<link rel="stylesheet" href="jquery.mobile-1.4.2.min.css" />
+    <link rel="stylesheet" href="ut.css" />
     <script type="text/javascript" src="phonegap.js"></script>
     <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="jquery.mobile-1.4.2.min.js"></script>
@@ -11,6 +34,8 @@
 		var __createNew = false;
 		var __selectedNoteId = null;
 		var __CurrentNote = new UTNote({ configs : new UTNoteConfig(), content : new UTNoteContent() });
+		var __ShowPopup__ = false;
+		var __PhotoDeleting__ = null;
 		
 		$(document).ready(function(e) {
 			document.addEventListener("deviceready", onDeviceReady, false);
@@ -85,25 +110,31 @@
 		});
 		// note-page : before show
 		$(document).on("pagebeforeshow", "#note-page", function(){
-			setNoteInfo();
-			initnotetitle();
+			if (!__ShowPopup__){
+				setNoteInfo();
+				initnotetitle();
+			}else{
+				__ShowPopup = false;
+			}
 		});
 		// note-page : shown
 		$(document).on("pageshow", "#note-page", function(){
 			
 		});
 		$(document).on("pagebeforehide", "#note-page", function(e, ui){
-			notehide();
-			//
-			$.mobile.loading( 'show', {
-				text: 'Saving...',
-				textVisible: true,
-				theme: 'a',
-				html: ""
-			});
-			//
-			//
-			savenote();
+			if (!__ShowPopup__){
+				notehide();
+				//
+				$.mobile.loading( 'show', {
+					text: 'Saving...',
+					textVisible: true,
+					theme: 'a',
+					html: ""
+				});
+				//
+				//
+				savenote();
+			}
 		});
 		// change title
 		function initnotetitle(){
@@ -144,6 +175,17 @@
 		function getContentInNote(){
 			var contentTxt = $("</div>").text($("textarea").val()).html();
 			//
+			// image list
+			__CurrentNote.content.imgs = new UTContentImgList();
+			//
+			$("#contentPhotosList").find(".photoElement").each(function(index, element) {
+                var pc = $($(element).find(".photoContent").first()).find(".photoLeft").first();
+				var pc_data = $(pc).attr('imgd');
+				var pc_alt = $(pc).text();
+				__CurrentNote.content.imgs.addImg(new UTContentImage({ alt : pc_alt, data : pc_data }));
+            });
+			// image contact
+			
 			//
 			__CurrentNote.content.text = $.parseXML("<p>"+contentTxt+"</p>");
 		}
@@ -162,9 +204,29 @@
 			$(content).css("background-color", "#"+__CurrentNote.configs.background);
 			//
 			if (__createNew){
-				
+				//
 			}else{
+				$.mobile.pageLoading();
+				loadNote(__selectedNoteId, loadDone_note);
 			}
+		}
+		//
+		function loadDone_note(){
+			$("#note-title").text(__CurrentNote.configs.title);
+			var content = $("div[data-role='content']", "#note-page");
+			$(content).css("background-color", "#"+__CurrentNote.configs.background);
+			addPhotoList();
+			addContactList();
+			addContent();
+			//
+			$.mobile.pageLoading(true);
+		}
+		function addPhotoList(){
+			//$("#contentPhotosList").append('<div class="photoElement"></div>');
+		}
+		function addContactList(){
+		}
+		function addContent(){	
 		}
 		//
 		function createNewNote(){
@@ -202,96 +264,141 @@
 			}
 			return s;
 		}
+		//
+		//
+		//
+		function addPhoto(){
+		}
+		function addContact(){
+		}
+		function confirmDeletePhoto(photoE){
+			__ShowPopup__ = true;
+			$.mobile.changePage("#deletePhoto-page", { role : "dialog" });
+			__PhotoDeleting__ = $($(photoE).parent()).parent();
+		}
+		function confirmViewPhoto(photoE){
+			__PhotoDeleting__ = $($(photoE).parent()).parent();
+		}
+		// dialog
+		function confirmYES_DeletePhoto(){
+			$(__PhotoDeleting__).remove();
+			$.mobile.changePage("#note-page");
+		}
+		function confirmNO_DeletePhoto(){
+			$.mobile.changePage("#note-page");
+		}
 	</script>
-</head>
-<body>
-	<!-- Page (Home) -->
-    <div data-role="page" id="home-page">
-    	<!-- Header -->
-        <div data-role="header" data-theme="b" data-position="fixed">
-        	<h1>Note</h1>
-            
-            <a href="#" id="btn-newnote" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-plus">New Note</a>
-        </div><!-- /header-->
+    </head>
+    <body>
+		<!-- Page (Home) -->
+		<div data-role="page" id="home-page">
+			<!-- Header -->
+			<div data-role="header" data-theme="b" data-position="fixed">
+				<h1>Note</h1>
+				
+				<a href="#" id="btn-newnote" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-plus">New Note</a>
+			</div><!-- /header-->
+			
+			<!-- content -->
+			<div data-role="content">
+				<!-- listview -->
+				<ul data-role="listview" id="listnotes" data-filter="true" data-filter-placeholder="Search Notes..." data-split-theme="a" data-theme="a">
+					
+				</ul><!--/listview -->
+			</div><!-- /content -->
+			
+			<!-- footer -->
+			<div data-role="footer" data-theme="b" data-position="fixed">
+				<h4>@ CRLN - 19/03/2014</h4>
+			</div><!-- /footer -->
+		</div><!-- /page -->
+		
+		<!-- Page (Main) -->
+		<div data-role="page" id="note-page">
+			<!-- Header -->
+			<div data-role="header" data-theme="b" data-position="fixed">
+				<h1 id="note-title">Untitled</h1>
+				<style>
+					.inputtitle-wrapper{
+						text-align: center;
+						padding: .2em 0;
+						text-overflow: ellipsis;
+						overflow: hidden;
+						white-space: nowrap;
+						background-color: #FFF;
+						margin: 0 auto;
+						margin-top: 4px;
+						margin-bottom: 4px;
+						width: 30%;
+						border-radius: .3125em;
+						border-color: #ddd;
+						box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
+					}
+					.inputtitle-text{
+						text-align: center;
+						width: 100%;
+						border: 0;
+						outline: none;
+					}
+				</style>
+				<div class="inputtitle-wrapper">
+					<input id="txt-notetitle" type="text" data-role="none" class="inputtitle-text"/>
+				</div>
+				<div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-left">
+					<a href="#nav-panel-left" class="ui-btn ui-icon-grid ui-mini ui-corner-all ui-btn-icon-notext">Menu</a>
+					<a href="#home-page" class="ui-btn ui-icon-home ui-mini ui-corner-all ui-btn-icon-notext">Home</a>
+				</div>
+				<a href="#setting-page" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-icon-gear ui-btn-icon-notext">Options</a>
+			</div><!-- /header -->        
+			
+			<div data-role="content">
+				<textarea placeholder="Note here..."></textarea>
+				<div data-role="collapsible" data-collapsed="true" id="contentPhotos">
+					<h3>Photos</h3>
+                    <button data-role="button" onClick="addPhoto();">Add Photo</button>
+                    <div id="contentPhotosList">
+                    	<div class="photoElement">
+                        	<div class="photoContent">
+                            	<div class="photoLeft" imgd="ksdhfkjsdhfkjhdskjSDFSDNFhdhfsdhfSDSDF" onClick="confirmViewPhoto(this);">Hello Vietnam</div>
+                                <div class="photoRight" onClick="confirmDeletePhoto(this);"></div>
+                            </div>
+                        </div>
+                    </div>
+				</div>
+				<div data-role="collapsible" data-collapsed="true" id="contentContacts">
+					<h3>Contacts</h3>
+                    <button data-role="button" onClick="addContact();">Add Contact</button>
+                    <div id="contentContactsList"></div>
+				</div>
+			</div>
+			
+			<!-- Footer -->
+			<div data-role="footer">
+			</div> <!-- /footer -->
+			
+			<!-- Panel nav-panel-left -->
+			<div data-role="panel" id="nav-panel-left" data-position="left" class="ui-panel ui-panel-position-left" data-display="overlay">
+			</div><!-- /panel -->
+			
+		</div><!-- /page (main) -->
+		
+		<!-- Page (setting) -->
+		<div data-role="page" id="setting-page">
+			<div data-role="header" data-theme="b" data-position="fixed">
+				<h1>Settings</h1>
+				<a href="#note-page" class="ui-btn-left ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back">Back</a>
+			</div>
+		</div> <!-- /page -->
         
-        <!-- content -->
-        <div data-role="content">
-            <!-- listview -->
-            <ul data-role="listview" id="listnotes" data-filter="true" data-filter-placeholder="Search Notes..." data-split-theme="a" data-theme="a">
-                
-            </ul><!--/listview -->
-        </div><!-- /content -->
-        
-        <!-- footer -->
-        <div data-role="footer" data-theme="b" data-position="fixed">
-        	<h4>@ CRLN - 19/03/2014</h4>
-        </div><!-- /footer -->
-    </div><!-- /page -->
-    
-	<!-- Page (Main) -->
-	<div data-role="page" id="note-page">
-    	<!-- Header -->
-    	<div data-role="header" data-theme="b" data-position="fixed">
-        	<h1 id="note-title">Untitled</h1>
-            <style>
-				.inputtitle-wrapper{
-					text-align: center;
-					padding: .2em 0;
-					text-overflow: ellipsis;
-					overflow: hidden;
-					white-space: nowrap;
-					background-color: #FFF;
-					margin: 0 auto;
-					margin-top: 4px;
-					margin-bottom: 4px;
-					width: 30%;
-					border-radius: .3125em;
-					border-color: #ddd;
-					box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
-				}
-				.inputtitle-text{
-					text-align: center;
-					width: 100%;
-					border: 0;
-					outline: none;
-				}
-			</style>
-            <div class="inputtitle-wrapper">
-	            <input id="txt-notetitle" type="text" data-role="none" class="inputtitle-text"/>
+        <div data-role="dialog" id="deletePhoto-page">
+        	<div data-role="header" data-theme="b">
+            	<h1>Delete Photo</h1>
             </div>
-            <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-left">
-                <a href="#nav-panel-left" class="ui-btn ui-icon-grid ui-mini ui-corner-all ui-btn-icon-notext">Menu</a>
-                <a href="#home-page" class="ui-btn ui-icon-home ui-mini ui-corner-all ui-btn-icon-notext">Home</a>
-            </div>
-            <a href="#setting-page" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-icon-gear ui-btn-icon-notext">Options</a>
-        </div><!-- /header -->        
-        
-        <div data-role="content">
-        	<textarea placeholder="Note here..."></textarea>
-        	<div data-role="collapsible" data-collapsed="true" id="contentPhotos">
-            	<h3>Photos</h3>
-            </div>
-            <div data-role="collapsible" data-collapsed="true" id="contentContacts">
-            	<h3>Contacts</h3>
+            <div data-role="content">
+            	<h3>Do you want to remove this photo?</h3>
+                <button data-role="button" data-theme="b" onClick="confirmYES_DeletePhoto();">Yes</button>
+                <button data-role="button" data-theme="a" onClick="confirmNO_DeletePhoto();">No</button>
             </div>
         </div>
-        
-        <!-- Footer -->
-        <div data-role="footer">
-        </div> <!-- /footer -->
-        
-        <!-- Panel nav-panel-left -->
-        <div data-role="panel" id="nav-panel-left" data-position="left" class="ui-panel ui-panel-position-left" data-display="overlay">
-        </div><!-- /panel -->
-        
-    </div><!-- /page (main) -->
-    
-    <!-- Page (setting) -->
-    <div data-role="page" id="setting-page">
-    	<div data-role="header" data-theme="b" data-position="fixed">
-        	<h1>Settings</h1>
-            <a href="#note-page" class="ui-btn-left ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-left ui-icon-back">Back</a>
-        </div>
-    </div> <!-- /page -->
-</body>
+	</body>
 </html>

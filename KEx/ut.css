@@ -1,0 +1,52 @@
+@charset "utf-8";
+/* CSS Document */
+.photoElement{
+	
+}
+.photoElement > .photoContent{
+	height: 36px;
+	position: relative;
+	text-align: left;
+}
+
+.photoElement > .photoContent > .photoLeft{
+	background: rgb(169,219,128); /* Old browsers */
+background: -moz-linear-gradient(top,  rgba(169,219,128,1) 0%, rgba(143,193,96,1) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(169,219,128,1)), color-stop(100%,rgba(143,193,96,1))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(169,219,128,1) 0%,rgba(143,193,96,1) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(169,219,128,1) 0%,rgba(143,193,96,1) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(169,219,128,1) 0%,rgba(143,193,96,1) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(169,219,128,1) 0%,rgba(143,193,96,1) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a9db80', endColorstr='#8fc160',GradientType=0 ); /* IE6-9 */
+
+	height: 100%;
+	position: relative;
+	border-radius: 3px 0px 0px 3px;
+	margin: 0px;	
+	margin-right: 70px;
+	border: 1px solid;
+	border-right: none;
+	box-shadow: 2px 0 2px 2px #CCC;
+	text-align: left;
+	padding-left: 30px;
+	line-height: 36px;
+	font-size: 14px;
+	font-weight: bold;
+	cursor: pointer;
+}
+.photoElement > .photoContent > .photoRight{
+	background-color: #FFF;
+	height: 100%;
+	width: 70px;
+	position: absolute;
+	right: 0;
+	top: 0;
+	margin: 0;
+	border-radius: 0px 5px 5px 0px;
+	border: 1px solid;
+	background-image: url(micons/delete-icon.png);
+	background-position: center;
+	background-repeat: no-repeat;
+	cursor: pointer;
+	box-shadow: 2px 0 2px 2px #CCC;
+}
