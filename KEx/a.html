@@ -36,6 +36,7 @@
 		var __CurrentNote = new UTNote({ configs : new UTNoteConfig(), content : new UTNoteContent() });
 		var __ShowPopup__ = false;
 		var __PhotoDeleting__ = null;
+		var __ContactDeleting__ = null;
 		
 		$(document).ready(function(e) {
 			document.addEventListener("deviceready", onDeviceReady, false);
@@ -136,6 +137,19 @@
 				savenote();
 			}
 		});
+		//
+		$(document).on("pagehide", "#viewPhoto-page", function(e, ui){
+			__ShowPopup__ = false;
+		});
+		$(document).on("pagehide", "#deletePhoto-page", function(e, ui){
+			__ShowPopup__ = false;
+		});
+		$(document).on("pagehide", "#removeContact-page", function(e, ui){
+			__ShowPopup__ = false;
+		});
+		$(document).on("pagehide", "#addContact-page", function(e, ui){
+			__ShowPopup__ = false;
+		});
 		// change title
 		function initnotetitle(){
 			$("#txt-notetitle").parent().css("display", "none");
@@ -187,7 +201,16 @@
 				__CurrentNote.content.imgs.addImg(new UTContentImage({ alt : pc_alt, data : pc_data }));
             });
 			// image contact
-			
+			__CurrentNote.configs.contacts = new UTContactList();
+			//
+			$("#contentContactsList").find(".contactElement").each(function(index, element) {
+                var cc = $($(element).find(".contactContent").first()).find(".contactDisplayName").first();
+				var cc_id = $(cc).attr('uid');
+				var cc_phone = $(cc).attr('phone');
+				var cc_displayName = $(cc).text();
+				//
+				__CurrentNote.configs.contacts.addContact(new UTContact({ id : cc_id, displayName : cc_displayName, phone : cc_phone }));
+            });
 			//
 			__CurrentNote.content.text = $.parseXML("<p>"+contentTxt+"</p>");
 		}
@@ -230,6 +253,9 @@
             });
 		}
 		function addContactList(){
+			$(__CurrentNote.configs.contacts.list).each(function(index, element) {
+				$("#contentContactsList").append('<div class="contactElement"><div class="contactContent"><div class="contactDisplayName" uid="'+element.id+'" phone="'+element.phone+'">'+element.displayName+'</div><button onclick="confirmRemoveContact(this);"></button></div></div>');
+            });
 		}
 		function addContent(){	
 		}
@@ -294,7 +320,11 @@
 		//
 		//
 		function addContact(){
+			__ShowPopup__ = true;
+			$.mobile.changePage("#addContact-page", { role : 'dialog' });
 		}
+		//
+		//
 		function confirmDeletePhoto(photoE){
 			__ShowPopup__ = true;
 			$.mobile.changePage("#deletePhoto-page", { role : "dialog" });
@@ -318,12 +348,54 @@
 		function confirmYES_DeletePhoto(){
 			$(__PhotoDeleting__).remove();
 			$.mobile.changePage("#note-page");
+			__ShowPopup__ = false;
 		}
 		function confirmNO_DeletePhoto(){
 			$.mobile.changePage("#note-page");
+			__ShowPopup__ = false;
 		}
 		function altPhotoChange(e){
 			$($(__PhotoDeleting__).find(".photoContent .photoLeft").first()).text($(e).val());
+		}
+		//
+		//
+		//
+		function confirmRemoveContact(e){
+			__ShowPopup__ = true;
+			$.mobile.changePage("#removeContact-page", { role : "dialog" });
+			__ContactDeleting__ = $($(e).parent()).parent();
+		}
+		function confirmYES_RemoveContact(){
+			$(__ContactDeleting__).remove();
+			$.mobile.changePage("#note-page");
+			__ShowPopup__ = false;
+		}
+		function confirmNO_RemoveContact(){
+			$.mobile.changePage("#note-page");
+			__ShowPopup__ = false;
+		}
+		//
+		//
+		//
+		function searchContact(e){
+			var key = $(e).val();
+			//
+			var _options = new ContactFindOptions();
+        	_options.filter="Bob"; 
+			_options.multiple = true;
+       		var fields = ["displayName", "name", "nickname", "phoneNumbers", "id"];
+        	navigator.contacts.find(fields, searchContact_onSuccess, searchContact_onError, _options);
+			$("#searchContactList").empty();
+		}
+		function searchContact_onSuccess(contacts){
+			$(contacts).each(function(index, element) {
+                $("#searchContactList").append('<li><a href="#" onClick="selectContact('+"'"+element.id+"'"+', '+"'"+element.displayName+"'"+', '+"'"+element.phoneNumbers[0]+"'"+')">'+element.displayName+'</a></li>').listview('refresh');
+            });
+		}
+		function searchContact_onError(contactError){
+		}
+		function selectContact(c_id, c_displayName, c_phone){
+			$("#contentContactsList").append('<div class="contactElement"><div class="contactContent"><div class="contactDisplayName" uid="'+c_id+'" phone="'+c_phone+'">'+c_displayName+'</div><button onclick="confirmRemoveContact(this);"></button></div></div>');
 		}
 	</script>
     </head>
@@ -409,7 +481,16 @@
 				<div data-role="collapsible" data-collapsed="true" id="contentContacts">
 					<h3>Contacts</h3>
                     <button data-role="button" onClick="addContact();">Add Contact</button>
-                    <div id="contentContactsList"></div>
+                    <div id="contentContactsList">
+                    	
+                    	<div class="contactElement">
+                            <div class="contactContent">
+                                <div class="contactDisplayName" uid="123" phone="0912345678">Ngô Xuân Cường</div>
+                                <button onClick="confirmRemoveContact(this);"></button>
+                            </div>
+                        </div>
+                        
+                    </div>
 				</div>
 			</div>
 			
@@ -434,7 +515,7 @@
         
         <div data-role="dialog" id="deletePhoto-page">
         	<div data-role="header" data-theme="b">
-            	<h1>Delete Photo</h1>
+            	<h1>Remove Photo</h1>
             </div>
             <div data-role="content">
             	<h3>Do you want to remove this photo?</h3>
@@ -447,9 +528,29 @@
             	<h1>View</h1>
             </div>
         	<div data-role="content">
-            	<table style="width: 100%;">
-					<textarea onChange="altPhotoChange(this);"></textarea>
-            		<img style="width: 100%;" />
+				<textarea onChange="altPhotoChange(this);"></textarea>
+            	<img style="width: 100%;" />
+            </div>
+        </div>
+        <div data-role="dialog" id="removeContact-page">
+        	<div data-role="header" data-theme="b">
+            	<h1>Remove Contact</h1>
+            </div>
+            <div data-role="content">
+            	<h3>Do you want to remove this contact?</h3>
+                <button data-role="button" data-theme="b" onClick="confirmYES_RemoveContact();">Yes</button>
+                <button data-role="button" data-theme="a" onClick="confirmNO_RemoveContact();">No</button>
+            </div>
+        </div>
+        <div data-role="dialog" id="addContact-page">
+        	<div data-role="header" data-theme="b">
+            	<h1>Add Contact</h1>
+            </div>
+            <div data-role="content">
+            	<h3>Type name of contact that you want to tag</h3>
+                <input type="search" onChange="searchContact(this);"/>
+                <ul data-role="listview" id="searchContactList">
+                </ul>
             </div>
         </div>
 	</body>

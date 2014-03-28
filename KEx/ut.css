@@ -53,7 +53,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a9db80', end
 }
 
 /*
-
+	Button's Icon
 */
 .ui-icon-takephoto:after {
 	background-image: url(micons/camera-icon.png);
@@ -62,4 +62,45 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a9db80', end
 .ui-icon-albumphoto:after{
 	background-image: url(micons/Images-icon.png);
 	background-size: 24px 24px;
+}
+
+/*
+	
+*/
+.contactElement{
+	box-shadow: 1px 0 1px 1px #CCC;
+	display: inline-block;
+	height: 36px;
+	margin-right: 10px;
+}
+.contactElement > .contactContent{
+	height: 36px;
+	background-color: #AAF;
+	display: inline-block;
+}
+.contactElement > .contactContent > .contactDisplayName{
+	min-width: 50px;
+	line-height: 36px;
+	padding-left: 10px;
+	padding-right: 10px;
+	display: inline-block;
+	color: #FFF;
+	float: left;
+}
+.contactElement > .contactContent > button{
+	background: url('micons/delete-icon(Gray).png');
+	background-size: 16px 16px;
+	background-position: center;
+	background-repeat: no-repeat;
+	width: 24px;
+	height: 24px;
+	line-height: 24px;
+	border-radius: 12px 12px 12px 12px;
+	display: inline-block;
+	margin-top: 6px;
+	margin-right: 6px;
+	text-shadow: inset 1px 1px 1px #000;
+	border: 0;
+	box-shadow: 0 0 1px 1px;
+	cursor: pointer;
 }
