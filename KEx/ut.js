@@ -28,22 +28,13 @@ UTNote.prototype.clearNote = function(){
 };
 UTNote.prototype.toXMLString = function(){
 	var s = $(this.toXML())[0].outerHTML;
-	/*
-	var t = -1;
-	while ((t = s.indexOf("<img", t)) != -1){
-		var t2 = s.indexOf(">", t);
-		var st = s.substring(t, t2 + 1);
-		s = s.replace(st, st.substring(0, st.length - 1) + "/>");
-		t = t2;
-	}*/
 	return '<?xml version="1.0" encoding="UTF-8"?>' + s;
 };
 UTNote.prototype.toXML = function(){
 	var root = $("<save></save>");
 	root.attr('id', this.id);
-	root
-		.append(this.configs.toXML())
-		.append(this.content.toXML());
+	root.append(this.configs.toXML());
+	root.append(this.content.toXML());
 	return root;
 };
 
@@ -170,12 +161,38 @@ UTNoteContent.prototype.loadFromData = function(data){
 };
 UTNoteContent.prototype.toXML = function(){
 	var rootContent = $("<content></content>");
-	rootContent
-		.append(this.text)
-		.append(this.imgs.toXML());
+	//rootContent.append($(this.text).find("text").first());
+	rootContent.append(this.text);
+	rootContent.append(this.imgs.toXML());
 	return rootContent;
 };
-
+function XMLToString(oXML){
+	var tagName = $(oXML).prop("tagName");
+	var s = "<"+tagName+">"
+	if ($(oXML).children().length > 0){
+		$(oXML).children().each(function(index, element) {
+            s += XMLToString(element);
+        });	
+	}else{
+	}
+	return s + "</"+tagName+">";
+	//"</"+tagName+">";
+	/*
+	if(window.DOMParser){
+		if (document.evaluate)
+		{
+			var parser = new DOMParser();
+			var strXml = parser.parseFromString(xmlElement, "text/xml");
+			return strXml;
+		}
+		else{
+			var strXml = xmlElement.xml;
+			return strXml;
+		}
+	} else {
+		return (new XMLSerializer()).serializeToString(oXML);   
+	}*/
+}
 // UTContent >
 function UTContentImgList(imgs){
 	imgs = imgs || [];
@@ -241,6 +258,7 @@ function notegetfile(file){
 	//
 }
 function getnote_fail(error){
+	alert('error: ' + error);
 }
 //
 // Write Note
@@ -249,7 +267,7 @@ var __CurrentNoteWrote;
 var __noteWriteDone;
 
 function getNoteFileNameById(id){
-	return "note" + id + ".mnf";
+	return id + ".mnf";
 }
 function writeNote(note, writeDone){
 	__CurrentNoteWrote = note;
@@ -271,4 +289,5 @@ function noteWriter_gotFileWriter(writer){
 	writer.write(__CurrentNoteWrote.toXMLString());
 }
 function noteWriter_fail(error){
+	alert(error);
 }

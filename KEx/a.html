@@ -30,7 +30,11 @@
     <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="jquery.mobile-1.4.2.min.js"></script>
     <script type="text/javascript" src="ut.js"></script>
+    <script type="text/javascript" src="testData.js"></script>
     <script type="text/javascript">
+		Date.prototype.toShortString = function(){
+			return this.getDate() + "/" + (this.getMonth() + 1) + "/" + this.getFullYear();
+		};
 		var __createNew = false;
 		var __selectedNoteId = null;
 		var __CurrentNote = new UTNote({ configs : new UTNoteConfig(), content : new UTNoteContent() });
@@ -74,9 +78,11 @@
 		function getallnote_readNote(file){
 			var reader = new FileReader();
 			reader.onloadend = function(evt){
+				alert(evt.target.result);
 				var res = $.parseXML(evt.target.result);
 				// get id
 				var note_id = $(res).find("save").first().attr('id');
+				alert(note_id);
 				// get config
 				var note_config = $(res).find("save config").first();
 				// get content
@@ -88,7 +94,9 @@
 				//
 				var note_description = note_title;//temp
 				//
-				$("#listnotes").append('<li data-filtertext="'+note_title+'" id="'+note_id+'"><a href="#note-page"><h2>'+note_title+'</h2><p>'+note_description+'</p><p class="ui-li-aside"><strong>'+note_updatetime+'</strong></p></a></li>').listview('refresh');
+				var wa = '<li data-filtertext="'+note_title+'" id="'+note_id+'"><a href="#note-page" onClick="__selectedNoteId='+"'"+note_id+"'"+'"><h2>'+note_title+'</h2><p>'+note_description+'</p><p class="ui-li-aside"><strong>'+note_updatetime+'</strong></p></a></li>';
+				alert(wa);
+				$("#listnotes").append(wa).listview('refresh');
 				//
 			};
 			reader.readAsText(file);
@@ -97,9 +105,14 @@
 		}
 		
 		function initformenulist(){
+			/*
 			$("> li a", $("#listnotes")).click(function(){
-				__selectedNoteId = $(this).parent().attr("id");
+				alert('1');
+				alert(this);
+				__selectedNoteId = $($(this).parent()).attr("id");
+				alert(__selectedNoteId);
 			});
+			*/
 		}
 		
 		// home-page : before show
@@ -112,6 +125,7 @@
 		// note-page : before show
 		$(document).on("pagebeforeshow", "#note-page", function(){
 			if (!__ShowPopup__){
+				alert('showing note:' + __selectedNoteId);
 				setNoteInfo();
 				initnotetitle();
 			}else{
@@ -123,6 +137,7 @@
 			
 		});
 		$(document).on("pagebeforehide", "#note-page", function(e, ui){
+			//
 			if (!__ShowPopup__){
 				notehide();
 				//
@@ -187,9 +202,15 @@
 			writeNote(__CurrentNote, savenoteDone);
 		}
 		function getContentInNote(){
-			var contentTxt = $("</div>").text($("textarea").val()).html();
+			var textr = $("#textareacontent").val();
+			var contentTxt;
+			if (textr == null || textr.length == 0){
+				contentTxt = "";
+			}else{
+				contentTxt = $($("<div></div>").text(textr)).html();
+			}
 			//
-			__CurrentNote.configs.updatetime = (new Date()).toString();
+			__CurrentNote.configs.updatetime = (new Date()).toShortString();
 			// image list
 			__CurrentNote.content.imgs = new UTContentImgList();
 			//
@@ -212,7 +233,10 @@
 				__CurrentNote.configs.contacts.addContact(new UTContact({ id : cc_id, displayName : cc_displayName, phone : cc_phone }));
             });
 			//
-			__CurrentNote.content.text = $.parseXML("<p>"+contentTxt+"</p>");
+			__CurrentNote.content.text = $($.parseXML("<text>"+contentTxt+"</text>")).find("text").first();
+			//
+			//alert(__CurrentNote.toXMLString());
+			console.log(__CurrentNote.toXMLString());
 		}
 		function savenoteDone(){
 			//
@@ -224,14 +248,19 @@
 		//
 		function setNoteInfo(){
 			//
-			$("#note-title").text(__CurrentNote.configs.title);
-			var content = $("div[data-role='content']", "#note-page");
-			$(content).css("background-color", "#"+__CurrentNote.configs.background);
-			//
 			if (__createNew){
 				//
+				$("#note-title").text(__CurrentNote.configs.title);
+				var content = $("div[data-role='content']", "#note-page");
+				$(content).css("background-color", "#"+__CurrentNote.configs.background);
+				$("#textareacontent").val('');
+				$("#contentContactsList").empty();
+				$("#contentPhotosList").empty();
+				//
+				//
+				__createNew = false;
 			}else{
-				$.mobile.pageLoading();
+				//$.mobile.pageLoading();
 				loadNote(__selectedNoteId, loadDone_note);
 			}
 		}
@@ -240,11 +269,14 @@
 			$("#note-title").text(__CurrentNote.configs.title);
 			var content = $("div[data-role='content']", "#note-page");
 			$(content).css("background-color", "#"+__CurrentNote.configs.background);
+			alert('adding Photo');
 			addPhotoList();
+			alert('adding Contacts');
 			addContactList();
+			alert('adding Content');
 			addContent();
 			//
-			$.mobile.pageLoading(true);
+			//$.mobile.pageLoading(true);
 		}
 		function addPhotoList(){
 			//$("#contentPhotosList").append('<div class="photoElement"></div>');
@@ -257,7 +289,21 @@
 				$("#contentContactsList").append('<div class="contactElement"><div class="contactContent"><div class="contactDisplayName" uid="'+element.id+'" phone="'+element.phone+'">'+element.displayName+'</div><button onclick="confirmRemoveContact(this);"></button></div></div>');
             });
 		}
-		function addContent(){	
+		function addContent(){
+			//
+			tx = __CurrentNote.content.text;
+			if ($(tx).find("text").length > 0){
+				tx = $(tx).find("text").first();
+			}
+			var c = $("<div></div>").append(tx);
+			var t = "";
+			if ($(t).children().length > 0){
+				t = $(c).find("text").html();
+			}else{
+				t = $(c).find("text").text();
+			}
+			alert("t: " + t);
+			$("#textareacontent").val(t);	
 		}
 		//
 		function createNewNote(){
@@ -268,7 +314,7 @@
 			__CurrentNote.configs.title = 'untitled';
 			__CurrentNote.configs.background = "FFC";
 			__CurrentNote.configs.contacts = new UTContactList();
-			__CurrentNote.configs.createtime = (new Date()).toString();
+			__CurrentNote.configs.createtime = (new Date()).toShortString();
 			__CurrentNote.configs.updatetime = __CurrentNote.configs.createtime;
 			__CurrentNote.content.imgs = new UTContentImgList();
 			__CurrentNote.content.text = $.parseXML("");
@@ -462,7 +508,7 @@
 			</div><!-- /header -->        
 			
 			<div data-role="content">
-				<textarea placeholder="Note here..."></textarea>
+				<textarea id="textareacontent" placeholder="Note here..."></textarea>
 				<div data-role="collapsible" data-collapsed="true" id="contentPhotos">
 					<h3>Photos</h3>
                     <button data-role="button" onClick="addTakePhoto();" data-inline="true" data-icon="takephoto">Take Photo</button>
